@@ -1,7 +1,10 @@
 package ma.miraoui.hospitalmanagement;
 
-import ma.miraoui.hospitalmanagement.entities.Patient;
+import ma.miraoui.hospitalmanagement.entities.*;
+import ma.miraoui.hospitalmanagement.repositories.ConsultationRepository;
+import ma.miraoui.hospitalmanagement.repositories.MedecinRepository;
 import ma.miraoui.hospitalmanagement.repositories.PatientRepository;
+import ma.miraoui.hospitalmanagement.repositories.RendezVousRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,8 +21,20 @@ public class HospitalManagementApplication {
 	}
 
 	@Bean
-	CommandLineRunner start(PatientRepository patientRepository){
+	CommandLineRunner start(PatientRepository patientRepository,
+							MedecinRepository medecinRepository,
+							RendezVousRepository rendezVousRepository,
+							ConsultationRepository consultationRepository){
 		return args -> {
+			Stream.of("Ahmed", "Mohammed", "Imad").forEach(name->{
+				Medecin medecin = new Medecin();
+				medecin.setNom(name);
+				medecin.setEmail(name+"@gmail.com");
+				medecin.setSpecialite(Math.random() > 0.5 ? "Dentiste" : "Chirurgie");
+				medecinRepository.save(medecin);
+			});
+
+
 			Stream.of("Oussama", "Hamid", "Hassan").forEach(name->{
 					Patient patient = new Patient();
 					patient.setNom(name);
@@ -27,6 +42,26 @@ public class HospitalManagementApplication {
 					patient.setMalade(false);
 					patientRepository.save(patient);
 			});
+
+			Patient patient = patientRepository.findById(1L).orElse(null);
+			Medecin medecin = medecinRepository.findByNom("Ahmed");
+
+			RendezVous rendezVous = new RendezVous();
+			rendezVous.setDateRDV(new Date());
+			rendezVous.setStatus(StatusRDV.PENDING);
+			rendezVous.setMedecin(medecin);
+			rendezVous.setPatient(patient);
+			rendezVousRepository.save(rendezVous);
+
+
+			RendezVous rdv = rendezVousRepository.findById(1L).orElse(null);
+
+			Consultation consultation = new Consultation();
+			if(rdv!=null) {
+				consultation.setDateConsultation(rdv.getDateRDV());
+				consultation.setRendezVous(rdv);
+				consultationRepository.save(consultation);
+			}
 		};
 	}
 }

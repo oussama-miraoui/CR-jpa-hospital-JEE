@@ -15,6 +15,7 @@ public class RendezVous {
     private Long id;
     @Temporal(TemporalType.DATE)
     private Date dateRDV;
+    @Enumerated(EnumType.STRING)
     private StatusRDV status;
     @ManyToOne
     private Patient patient;
